@@ -1,63 +1,19 @@
-# Import python packages
 import os
 import sys
 
-import random
 import numpy as np
-import pandas as pd
 
 from src.utils import *
-
-import warnings
-warnings.filterwarnings('ignore')
-
 sys.path.insert(0, os.path.dirname(os.path.abspath('constants')))
 from constants.parse_parameters import *
+
+file_path = read_files(resource_path)
+task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resources(file_path)
 
 # Info sur le model
 nb_tache = 5
 nb_VM = 3
-nb_objectif=3
-
-file_path = read_files(resource_path)
-
-# Read ressources
-def read_resources(file_path):
-
-    task_connectivity = pd.read_csv(file_path['Task_connectivity_5.csv'], header=None)
-    task_instructions = np.array(pd.read_csv(file_path['Task_instructions_5.csv'], header=0))
-    VM_caracteristique = np.array(pd.read_csv(file_path['VM_caracteristique_3.csv'], header=0))
-    VM_cost = pd.read_csv(file_path['VM_cost_3.csv'], header=None)
-    
-    return task_connectivity, task_instructions, VM_caracteristique, VM_cost
-
-task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resources(file_path)
-
-#print(task_connectivity)
-# Random solutions
-# solution example :[tâche,VM] [[0,1], [1,2] ,[2,1], [3,3], [4,2]]
-
-# On prend les tâches dans l'ordre et on affecte un VM au hasard VM0, VM1 ou VM2
-def random_solution(nb_tache, nb_vm):
-    sol={}
-    for i in range(nb_tache):
-        sol[i] = random.randint(0, nb_vm-1)
-    return sol
-
-# Création de la opulation de départ 
-def create_start_population(nb_pop=10):
-    starter=[]
-    for i in range(nb_pop):
-        starter.append(random_solution(nb_tache, nb_VM))
-    return starter
-
-starter=create_start_population()
-#print(starter[0])
-
-# Fonction d'évaluation de la solution 
-# Coût 
-# Makespan
-# Disponibilité
+nb_objectif = 3
 
 # compute_temps_execution : calcule le temps d'execution d'une tache sur une VM
 #                           Temps d'execution en secondes
@@ -167,78 +123,3 @@ def compute_cout(solution):
 
 #print("cout",compute_cout(starter[0]))
 
-def evaluate_population(population):
-    print("population",population)
-    print()
-    score={}
-    for s in population:
-        cout = compute_cout(s)[0]
-        makespan = compute_makespan(s)[0]
-        dispo = compute_disponibilite(s)[0]
-        score[population.index(s)] = [cout, makespan, dispo]
-    print("score",score)
-    print()
-    return score
-
-score = evaluate_population(starter)
-
-# ranking des population selon la methode NSGA:
-## rank 1: solution non dominée
-## rank 2: solution dominé par les ranks 1
-## rank 3: solution dominé par les ranks 2
-## ... 
-
-# liste des solutions dominantes de chaque solution
-def dominance(score):
-    dominance={}
-    for key in score.keys(): # pour chaque clé = solution
-        print("##############", key)
-        dominante=list(score.keys()) #initialisé la liste des solutions dominantes à toute les solutions
-        #print(dominante)
-        for i in range(3): # pour chaque objectif 
-            objectif_key = score[key][i] # on récupère sa valeur
-            print()
-            print("objectif",i)
-            print("objectif_key",objectif_key)
-            #print(dominante)
-            for s in list(dominante): # pour chaque solution dominante 
-                print("solution teste", s)
-                print("score solution",score[s][i])
-                if (objectif_key<=score[s][i]): # on regarde si l'objectif de la solution ciblé est inferieur à l'objectif de la solution dominante 
-                    dominante.remove(s) # si oui alors on supprime la solution dominante de la liste
-                #print(dominante)
-        #rank[key]=len(dominante)+1
-        dominance[key]=dominante
-    print("dominance",dominance)
-    print()
-    return dominance
-
-# calcule du rank d'une solution à l'aide de sa liste de solution dominante
-def compute_rank(rank, list):
-    r_max=2
-    for e in list:
-        if rank[e]>=r_max:
-            print(e)
-            print(rank[e])
-            r_max=rank[e]+1
-    return r_max
-
-# calcule du rank de toute les solution
-def ranking(score):
-    # on récupère la list des dominance et on la trie
-    dominance_list = dominance(score)
-    dominance_list_sorted = {k:v for k,v in sorted(dominance_list.items(), key=lambda l:len(l[1]))} 
-    print(dominance_list_sorted) #les solution avec le mins de dominance au début
-    rank={}
-
-    for k in dominance_list_sorted.keys(): # pour chaque solution
-        if len(dominance_list[k])==0: # on attribue le rank 1 au solution sans dominance 
-            rank[k]=1
-        else:
-            r=compute_rank(rank, dominance_list[k]) # on calcule le rank des autres solutions = rank max de leur dominance +1
-            rank[k]=r 
-    print(rank)
-    return rank
-
-ranking(score)
-            

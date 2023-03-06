@@ -1,9 +1,9 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+__pycache__
 .~lock.*
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
 # Environments
-venv_workflow_scheduling/
+venv_workflow_scheduling

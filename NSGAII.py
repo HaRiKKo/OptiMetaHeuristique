@@ -1,32 +1,36 @@
 # Import python packages
+import os
+import sys
+
 import random
 import numpy as np
 import pandas as pd
+
+from src.utils import *
+
+import warnings
+warnings.filterwarnings('ignore')
+
+sys.path.insert(0, os.path.dirname(os.path.abspath('constants')))
+from constants.parse_parameters import *
 
 # Info sur le model
 nb_tache = 5
 nb_VM = 3
 
-# Ressources paths
-task_connectivity_path = './ressources/Task_connectivity_5.csv'
-task_instructions_path = './ressources/Task_instructions_5.csv'
-VM_caracteristique_path = './ressources/VM_caracteristique_3.csv'
-VM_cost_path= './ressources/VM_cost_3.csv'
+file_path = read_files(resource_path)
 
 # Read ressources
-def read_ressources(task_connectivity_path=task_connectivity_path,
-                    task_instructions_path=task_instructions_path,
-                    VM_caracteristique_path=VM_caracteristique_path,
-                    VM_cost_path=VM_cost_path):
+def read_resources(file_path):
 
-    task_connectivity = pd.read_csv(task_connectivity_path, header=None)
-    task_instructions = np.array(pd.read_csv(task_instructions_path, header=0))
-    VM_caracteristique = np.array(pd.read_csv(VM_caracteristique_path, header=0))
-    VM_cost = pd.read_csv(VM_cost_path, header=None)
+    task_connectivity = pd.read_csv(file_path['Task_connectivity_5.csv'], header=None)
+    task_instructions = np.array(pd.read_csv(file_path['Task_instructions_5.csv'], header=0))
+    VM_caracteristique = np.array(pd.read_csv(file_path['VM_caracteristique_3.csv'], header=0))
+    VM_cost = pd.read_csv(file_path['VM_cost_3.csv'], header=None)
     
     return task_connectivity, task_instructions, VM_caracteristique, VM_cost
 
-task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_ressources()
+task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resources(file_path)
 
 #print(task_connectivity)
 # Random solutions

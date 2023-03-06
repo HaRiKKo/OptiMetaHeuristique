@@ -1,9 +1,6 @@
-# Import python packages
 import os
 import sys
 
-import random
-import numpy as np
 import pandas as pd
 
 from src.compute_objectives import *
@@ -19,5 +16,8 @@ from constants.parse_parameters import *
 file_path = read_files(resource_path)
 task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resources(file_path)
 
-starter=create_start_population()
-print(starter[0])
+starter = create_start_population()
+
+score = evaluate_population(starter)
+
+ranking(score)

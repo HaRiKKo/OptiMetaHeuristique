@@ -6,6 +6,7 @@ import pandas as pd
 # Info sur le model
 nb_tache = 5
 nb_VM = 3
+nb_objectif=3
 
 # Ressources paths
 task_connectivity_path = './ressources/Task_connectivity_5.csv'
@@ -47,7 +48,7 @@ def create_start_population(nb_pop=10):
     return starter
 
 starter=create_start_population()
-print(starter[0])
+#print(starter[0])
 
 # Fonction d'évaluation de la solution 
 # Coût 
@@ -108,6 +109,7 @@ def compute_date_fin(solution, task_id):
 def compute_makespan(solution):
     df_list=[compute_date_fin(solution, tache_id) for tache_id in solution.keys()]
     
+    #print("makespan", max(df_list))
     return max(df_list)
 
 #print("makespan",compute_makespan(starter[0]))
@@ -117,22 +119,26 @@ def compute_makespan(solution):
 #hypothèse : le temps d'activation d'une VM = DF(dernière tache) - DF(première tache) + temps execution(première tache)
 def compute_temps_VM(solution, VM_id):
     tasks_id=[k for k, v in solution.items() if v == VM_id]
-    print(tasks_id)
-    temps_VM = compute_date_fin(solution, tasks_id[-1]) - compute_date_fin(solution, tasks_id[0]) + compute_temps_execution(tasks_id[0], VM_id)
-
-    return temps_VM
+    #print(tasks_id)
+    if len(tasks_id)>0:
+        temps_VM = compute_date_fin(solution, tasks_id[-1]) - compute_date_fin(solution, tasks_id[0]) + compute_temps_execution(tasks_id[0], VM_id)
+        return temps_VM
+    else:
+        return 0
 
 """NE MARCHE PAS"""
 # compute_disponibilité : représente utilisation des VM dans le workflows
 def compute_disponibilite(solution):
     somme = 0
+    makespan = compute_makespan(solution)
     for vm in range(nb_VM):
         #somme += compute_temps_execution(key, solution[key])
-        somme += compute_temps_VM(solution, vm)
-    print(somme)
-    print(compute_makespan(solution))
+        somme += compute_temps_VM(solution, vm)/makespan
+    #print(somme)
+    #print(compute_makespan(solution))
 
-    return 1/nb_VM * (1-(somme/compute_makespan(solution)))
+    #print("disponibilité", 1/nb_VM * (1-somme))
+    return 1/nb_VM * (1-somme)
 
 #print("disponibilité", compute_disponibilite(starter[0]))
 # compute_cout : cout total du workflow = cout execution+cout tranferts
@@ -141,7 +147,7 @@ def compute_cout(solution):
     cout_execution = 0
     for key in solution.keys():
         cout_execution += compute_cout_execution(key, solution[key])
-    print("cout d'execution :",cout_execution)
+    #print("cout d'execution :",cout_execution)
 
     # compute le cout de tranfers de la solution
     cout_transfert = 0
@@ -150,14 +156,85 @@ def compute_cout(solution):
         if i != 0:
             #print(idx[0], idx[1])
             cout_transfert += compute_cout_transfert(solution, idx[0], idx[1])
-    print("cout de transfert",cout_transfert)
+    #print("cout de transfert",cout_transfert)
+
+    #print("cout total", cout_execution+cout_transfert)
     return cout_execution+cout_transfert
 
 #print("cout",compute_cout(starter[0]))
 
 def evaluate_population(population):
-    print(population)
+    print("population",population)
+    print()
+    score={}
     for s in population:
-        compute_cout(s)
-        compute_makespan(s)
-        compute_disponibilite(s)
+        cout = compute_cout(s)[0]
+        makespan = compute_makespan(s)[0]
+        dispo = compute_disponibilite(s)[0]
+        score[population.index(s)] = [cout, makespan, dispo]
+    print("score",score)
+    print()
+    return score
+
+score = evaluate_population(starter)
+
+# ranking des population selon la methode NSGA:
+## rank 1: solution non dominée
+## rank 2: solution dominé par les ranks 1
+## rank 3: solution dominé par les ranks 2
+## ... 
+
+# liste des solutions dominantes de chaque solution
+def dominance(score):
+    dominance={}
+    for key in score.keys(): # pour chaque clé = solution
+        print("##############", key)
+        dominante=list(score.keys()) #initialisé la liste des solutions dominantes à toute les solutions
+        #print(dominante)
+        for i in range(3): # pour chaque objectif 
+            objectif_key = score[key][i] # on récupère sa valeur
+            print()
+            print("objectif",i)
+            print("objectif_key",objectif_key)
+            #print(dominante)
+            for s in list(dominante): # pour chaque solution dominante 
+                print("solution teste", s)
+                print("score solution",score[s][i])
+                if (objectif_key<=score[s][i]): # on regarde si l'objectif de la solution ciblé est inferieur à l'objectif de la solution dominante 
+                    dominante.remove(s) # si oui alors on supprime la solution dominante de la liste
+                #print(dominante)
+        #rank[key]=len(dominante)+1
+        dominance[key]=dominante
+    print("dominance",dominance)
+    print()
+    return dominance
+
+# calcule du rank d'une solution à l'aide de sa liste de solution dominante
+def compute_rank(rank, list):
+    r_max=2
+    for e in list:
+        if rank[e]>=r_max:
+            print(e)
+            print(rank[e])
+            r_max=rank[e]+1
+    return r_max
+
+# calcule du rank de toute les solution
+def ranking(score):
+    # on récupère la list des dominance et on la trie
+    dominance_list = dominance(score)
+    dominance_list_sorted = {k:v for k,v in sorted(dominance_list.items(), key=lambda l:len(l[1]))} 
+    print(dominance_list_sorted) #les solution avec le mins de dominance au début
+    rank={}
+
+    for k in dominance_list_sorted.keys(): # pour chaque solution
+        if len(dominance_list[k])==0: # on attribue le rank 1 au solution sans dominance 
+            rank[k]=1
+        else:
+            r=compute_rank(rank, dominance_list[k]) # on calcule le rank des autres solutions = rank max de leur dominance +1
+            rank[k]=r 
+    print(rank)
+    return rank
+
+ranking(score)
+            

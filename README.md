@@ -2,7 +2,7 @@
 
 ## Description
 
-TBD.
+Worflow scheduling using Multi-Objective Optimization (MOO) with a Pareto approach : NSGA-II and PSO (optional)
 
 **Credits:**
 * Ruben Aloukou (<aloukourub@cy-tech.fr>)
@@ -37,3 +37,13 @@ Notices:
 - You can desactivate the environmnent by doing this in your terminal: `deactivate`
 - You have to install the dependencies in your project directory.
 - We recommand you to name your venv : venv_workflow_scheduling
+
+## How to run
+
+To run the project, you have to configure the parameter file that you can find in the constants folder :
+
+* **resource_path** : the string with the location where the required resources for the project are stored
+
+After configuring the parameter file and activating the virtual environment, you can run the projet by using this command :
+
+`python main.py`

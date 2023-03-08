@@ -1,8 +1,8 @@
 import random
+import math
 
 from src.compute_objectives import *
 
-#print(task_connectivity)
 # Random solutions
 # solution example :[tâche,VM] [[0,1], [1,2] ,[2,1], [3,3], [4,2]]
 
@@ -26,16 +26,14 @@ def create_start_population(nb_pop=10):
 # Disponibilité
 
 def evaluate_population(population):
-    print("population",population)
-    print()
+    #print("population",population)
     score={}
-    for s in population:
-        cout = compute_cout(s)[0]
-        makespan = compute_makespan(s)[0]
-        dispo = compute_disponibilite(s)[0]
-        score[population.index(s)] = [cout, makespan, dispo]
-    print("score",score)
-    print()
+    for i in range(len(population)):
+        cout = compute_cout(population[i])[0]
+        makespan = compute_makespan(population[i])[0]
+        dispo = compute_disponibilite(population[i])[0]
+        score[i] = [cout, makespan, dispo]
+    #print("score",score)
     return score
 
 # ranking des population selon la methode NSGA:
@@ -48,25 +46,16 @@ def evaluate_population(population):
 def dominance(score):
     dominance={}
     for key in score.keys(): # pour chaque clé = solution
-        print("##############", key)
         dominante=list(score.keys()) #initialisé la liste des solutions dominantes à toute les solutions
-        #print(dominante)
         for i in range(3): # pour chaque objectif 
             objectif_key = score[key][i] # on récupère sa valeur
-            print()
-            print("objectif",i)
-            print("objectif_key",objectif_key)
-            #print(dominante)
+
             for s in list(dominante): # pour chaque solution dominante 
-                print("solution teste", s)
-                print("score solution",score[s][i])
                 if (objectif_key<=score[s][i]): # on regarde si l'objectif de la solution ciblé est inferieur à l'objectif de la solution dominante 
                     dominante.remove(s) # si oui alors on supprime la solution dominante de la liste
-                #print(dominante)
-        #rank[key]=len(dominante)+1
+
         dominance[key]=dominante
-    print("dominance",dominance)
-    print()
+    #print("dominance",dominance)
     return dominance
 
 # calcule du rank d'une solution à l'aide de sa liste de solution dominante
@@ -74,8 +63,6 @@ def compute_rank(rank, list):
     r_max=2
     for e in list:
         if rank[e]>=r_max:
-            print(e)
-            print(rank[e])
             r_max=rank[e]+1
     return r_max
 
@@ -83,8 +70,7 @@ def compute_rank(rank, list):
 def ranking(score):
     # on récupère la list des dominance et on la trie
     dominance_list = dominance(score)
-    dominance_list_sorted = {k:v for k,v in sorted(dominance_list.items(), key=lambda l:len(l[1]))} 
-    print(dominance_list_sorted) #les solution avec le mins de dominance au début
+    dominance_list_sorted = {k:v for k,v in sorted(dominance_list.items(), key=lambda l:len(l[1]))} #les solution avec le mions de dominance au début
     rank={}
 
     for k in dominance_list_sorted.keys(): # pour chaque solution
@@ -93,5 +79,62 @@ def ranking(score):
         else:
             r=compute_rank(rank, dominance_list[k]) # on calcule le rank des autres solutions = rank max de leur dominance +1
             rank[k]=r 
-    print(rank)
+    #print(rank)
     return rank
+
+# calcule de la crowding distance
+def crowding_distance(liste_solutions):
+    objective_functions = [compute_makespan, compute_cout, compute_disponibilite]
+    l = len(liste_solutions)
+    # Initialisation des distances
+    distance = {}
+    for i in range(l):
+        distance[i] = 0
+
+    # Tri en fonction de chaque objectif
+    for objectif in objective_functions:
+        # Evaluation
+        evaluated_pop = list(map(objectif, liste_solutions))
+        # Sort
+        sorted_pop = sorted(range(len(evaluated_pop)), key=lambda k: evaluated_pop[k])
+        # Infini pour les valeurs extrêmes
+        distance[sorted_pop[0]] = [math.inf]
+        distance[sorted_pop[-1]] = [math.inf]
+        for i in range(1,l-1):
+            distance[sorted_pop[i]] += evaluated_pop[sorted_pop[i+1]] - evaluated_pop[sorted_pop[i-1]]
+    
+    # arrondie les distances à 2 chiffres après la virgule 
+    res = dict()
+    for key in distance:
+        if distance[key] != math.inf:
+            res[key] = round(distance[key][0],2)
+        else:
+            res[key] = distance[key][0]
+    #print("crowding distance", res)    
+    return res
+    
+# Selection des solutions avec un tournois binaires
+def selection(liste_solutions, ranking):
+    # On selectionne la moitié des solutions
+    # Comparaison des solutions 2 par 2 (choisies au hasard) puis sélection de la meilleure
+    distance_dict = crowding_distance(liste_solutions)
+    id_solutions = [*range(len(liste_solutions))]
+    random.shuffle(id_solutions)
+    selected_solutions = []
+    
+    for i in range(0,len(liste_solutions)-1,2):
+        candidat1 = id_solutions[i]
+        candidat2 = id_solutions[i+1]
+        rank = ranking[candidat1] - ranking[candidat2]
+        if rank == 0: # si les deux solution on le même rang
+            if distance_dict[candidat1] >= distance_dict[candidat2]:
+                selected_solutions.append(candidat1)
+            else:
+                selected_solutions.append(candidat2)
+        elif rank < 0: # si le candidat 1 à un rang inférieur => on le selectionne
+            selected_solutions.append(candidat1)
+        else: # si le candidat 2 à un rang inférieur => on le selectionne 
+            selected_solutions.append(candidat2)
+
+    #print("solution selectionner", selected_solutions)
+    return selected_solutions

@@ -19,10 +19,16 @@ task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resourc
     file_path
 )
 
+# création des solution initiale
 starter = create_start_population()
 
-# score = evaluate_population(starter)
+# evaluation des solution initiale
+score = evaluate_population(starter)
 
-# ranking(score)
+# ranking des solution
+rank = ranking(score)
 
-print(starter[0], "\n", compute_disponibilite(starter[0]))
+# selection des populations
+selected_solutions = selection(starter, rank)
+
+#print(starter[0], "\n", compute_disponibilite(starter[0]))

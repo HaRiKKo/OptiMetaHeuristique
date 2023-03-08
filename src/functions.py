@@ -8,6 +8,17 @@ from src.compute_objectives import *
 
 # On prend les tâches dans l'ordre et on affecte un VM au hasard VM0, VM1 ou VM2
 def random_solution(nb_tache, nb_vm):
+    """
+    Generate a VM for each task
+
+    Input:
+    - nb_tache : Number of tasks
+    - nb_vm :  Number of virtual machines
+
+    Output:
+    - sol : Dict corresponding to a solution with each task assigned to a virtual machine
+
+    """
     sol = {}
     for i in range(nb_tache):
         sol[i] = random.randint(0, nb_vm - 1)
@@ -16,6 +27,14 @@ def random_solution(nb_tache, nb_vm):
 
 # Création de la opulation de départ
 def create_start_population(nb_pop=10):
+    """
+    Input:
+    - nb_pop : Length of the population
+
+    Output :
+    - starter : Generated population, list of solutions
+
+    """
     starter = []
     for i in range(nb_pop):
         starter.append(random_solution(nb_tache, nb_VM))
@@ -29,14 +48,22 @@ def create_start_population(nb_pop=10):
 
 
 def evaluate_population(population):
-    # print("population",population)
+    """
+    Evaluate a population of solutions according to : cost, makespan and availability
+
+    Input:
+    - population : Population to be evaluated (list of dict)
+
+    Output:
+    - score : Evaluation for the input population, dict with key being the index of the solution, value being a list of length 3 for each objective evaluated
+
+    """
     score = {}
     for i in range(len(population)):
         cout = compute_cout(population[i])[0]
         makespan = compute_makespan(population[i])[0]
         dispo = compute_disponibilite(population[i])[0]
         score[i] = [cout, makespan, dispo]
-    # print("score",score)
     return score
 
 
@@ -78,8 +105,16 @@ def compute_rank(rank, list):
     return r_max
 
 
-# calcule du rank de toute les solution
 def ranking(score):
+    """
+    Computes rank of solutions with the score previously computed
+
+    Input:
+    - score : Score computed for a population | Dict with int keys and list of length 3 values
+
+    Output:
+    - rank : Rank of each solution | Dict with int keys (corresponds to the index of the solution) & int values (corresponds to the rank of the solution)
+    """
     # on récupère la list des dominance et on la trie
     dominance_list = dominance(score)
     dominance_list_sorted = {
@@ -101,8 +136,16 @@ def ranking(score):
     return rank
 
 
-# calcule de la crowding distance
 def crowding_distance(liste_solutions):
+    """
+    Computes the crowding distance for a population
+
+    Input:
+    - liste_solutions : Population | List of solutions (dict)
+
+    Output:
+    - res : Crowding distance for each solution | Dict int -> int
+    """
     objective_functions = [compute_makespan, compute_cout, compute_disponibilite]
     l = len(liste_solutions)
     # Initialisation des distances
@@ -137,6 +180,16 @@ def crowding_distance(liste_solutions):
 
 # Selection des solutions avec un tournois binaires
 def selection(liste_solutions, ranking):
+    """
+    Selects solutions by comparing them 2 by 2
+
+    Input:
+    - liste_solutions : Population | List of solutions
+    - ranking : rank of the solutions
+
+    Output:
+    - selected_solutions : Newly selected population half the size of the starting population
+    """
     # On selectionne la moitié des solutions
     # Comparaison des solutions 2 par 2 (choisies au hasard) puis sélection de la meilleure
     distance_dict = crowding_distance(liste_solutions)
@@ -163,6 +216,15 @@ def selection(liste_solutions, ranking):
 
 
 def sort_dictionary(dict):
+    """
+    Sort a dictionnary by key
+
+    Input:
+    - dict : dictionnary with int keys
+
+    Output:
+    - nouveau_dict : sorted dictionnary
+    """
     nouveau_dict = {}
     for i in range(len(dict)):
         nouveau_dict[i] = dict[i]
@@ -170,6 +232,15 @@ def sort_dictionary(dict):
 
 
 def crossover(population):
+    """
+    Crossover for a population
+
+    Input:
+    - population : Population | List of solutions
+
+    Output:
+    - nouvelle_population : population modified with crossover
+    """
     taille_pop = len(population)
     nouvelle_population = []
     for i in range(0, taille_pop - 1, 2):
@@ -191,6 +262,15 @@ def crossover(population):
 
 
 def mutation(population):
+    """
+    Mutates a population by chosing 1 task randomly and mutating it with a randomly VM for each solution
+
+    Input:
+    - population : Population | List of solutions
+
+    Output:
+    - population : mutated population
+    """
     nb_tache = len(population[0])
     taille_population = len(population)
     tache_mutee = random.randint(0, nb_tache - 1)
@@ -204,6 +284,16 @@ def mutation(population):
 
 # Combine population before
 def elitism_selection(n, population):
+    """
+    Process of selectionwith elitism
+
+    Input:
+    - n : length of the output population
+    - population : list of solutions
+
+    Output:
+    - selected_pop : Newly selected elite population of size n
+    """
     rank = ranking(evaluate_population(population))
     selected_pop = []
     for key, value in rank.items():

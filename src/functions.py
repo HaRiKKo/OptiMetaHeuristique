@@ -8,22 +8,25 @@ from src.compute_objectives import *
 
 # On prend les tâches dans l'ordre et on affecte un VM au hasard VM0, VM1 ou VM2
 def random_solution(nb_tache, nb_vm):
-    sol={}
+    sol = {}
     for i in range(nb_tache):
-        sol[i] = random.randint(0, nb_vm-1)
+        sol[i] = random.randint(0, nb_vm - 1)
     return sol
 
-# Création de la opulation de départ 
+
+# Création de la opulation de départ
 def create_start_population(nb_pop=10):
-    starter=[]
+    starter = []
     for i in range(nb_pop):
         starter.append(random_solution(nb_tache, nb_VM))
     return starter
 
-# Fonction d'évaluation de la solution 
-# Coût 
+
+# Fonction d'évaluation de la solution
+# Coût
 # Makespan
 # Disponibilité
+
 
 def evaluate_population(population):
     #print("population",population)
@@ -36,11 +39,12 @@ def evaluate_population(population):
     #print("score",score)
     return score
 
+
 # ranking des population selon la methode NSGA:
 ## rank 1: solution non dominée
 ## rank 2: solution dominé par les ranks 1
 ## rank 3: solution dominé par les ranks 2
-## ... 
+## ...
 
 # liste des solutions dominantes de chaque solution
 def dominance(score):
@@ -58,13 +62,15 @@ def dominance(score):
     #print("dominance",dominance)
     return dominance
 
+
 # calcule du rank d'une solution à l'aide de sa liste de solution dominante
 def compute_rank(rank, list):
-    r_max=2
+    r_max = 2
     for e in list:
         if rank[e]>=r_max:
             r_max=rank[e]+1
     return r_max
+
 
 # calcule du rank de toute les solution
 def ranking(score):
@@ -73,9 +79,11 @@ def ranking(score):
     dominance_list_sorted = {k:v for k,v in sorted(dominance_list.items(), key=lambda l:len(l[1]))} #les solution avec le mions de dominance au début
     rank={}
 
-    for k in dominance_list_sorted.keys(): # pour chaque solution
-        if len(dominance_list[k])==0: # on attribue le rank 1 au solution sans dominance 
-            rank[k]=1
+    for k in dominance_list_sorted.keys():  # pour chaque solution
+        if (
+            len(dominance_list[k]) == 0
+        ):  # on attribue le rank 1 au solution sans dominance
+            rank[k] = 1
         else:
             r=compute_rank(rank, dominance_list[k]) # on calcule le rank des autres solutions = rank max de leur dominance +1
             rank[k]=r 

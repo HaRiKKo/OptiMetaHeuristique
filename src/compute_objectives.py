@@ -76,8 +76,6 @@ def compute_date_fin(solution, task_id):
 #                   en secondes
 def compute_makespan(solution):
     df_list = [compute_date_fin(solution, tache_id) for tache_id in solution.keys()]
-
-    # print("makespan", max(df_list))
     return max(df_list)
 
 
@@ -100,40 +98,25 @@ def compute_temps_VM(solution, VM_id):
         return 0
 
 
-# compute_disponibilité : représente utilisation des VM dans le workflows
+# compute_disponibilité : représente utilisation des VM dans le workflow
 def compute_disponibilite(solution):
     somme = 0
     makespan = compute_makespan(solution)
     for vm in range(nb_VM):
-        # somme += compute_temps_execution(key, solution[key])
         somme += (-1) * compute_temps_VM(solution, vm) / makespan
-    # print(somme)
-    # print(compute_makespan(solution))
-
-    # print("disponibilité", 1/nb_VM * (1-somme))
     return (1 - somme) / nb_VM
 
 
-# print("disponibilité", compute_disponibilite(starter[0]))
 # compute_cout : cout total du workflow = cout execution+cout tranferts
 def compute_cout(solution):
     # compute le cout d'execution de la solution
     cout_execution = 0
     for key in solution.keys():
         cout_execution += compute_cout_execution(key, solution[key])
-    # print("cout d'execution :",cout_execution)
 
     # compute le cout de tranfers de la solution
     cout_transfert = 0
     for idx, i in np.ndenumerate(task_connectivity):
-        # print(idx,i)
         if i != 0:
-            # print(idx[0], idx[1])
             cout_transfert += compute_cout_transfert(solution, idx[0], idx[1])
-    # print("cout de transfert",cout_transfert)
-
-    # print("cout total", cout_execution+cout_transfert)
     return cout_execution + cout_transfert
-
-
-# print("cout",compute_cout(starter[0]))

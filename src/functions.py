@@ -1,5 +1,7 @@
 import random
 import math
+from matplotlib import pyplot as plt
+from matplotlib import cm
 
 from src.compute_objectives import *
 
@@ -25,7 +27,7 @@ def random_solution(nb_tache, nb_vm):
     return sol
 
 
-# Création de la opulation de départ
+# Création de la population de départ
 def create_start_population(nb_pop=10):
     """
     Input:
@@ -75,24 +77,33 @@ def evaluate_population(population):
 
 # liste des solutions dominantes de chaque solution
 def dominance(score):
+    """
+    Returns for each solution its dominating solutions
+
+    Input:
+    - score : Evaluation for the input population, dict with key being the index of the solution, value being a list of length 3 for each objective evaluated
+
+    Output:
+    - dominance : Dict with key is a solution and values are dominating solutions
+
+    """
     dominance = {}
     for key in score.keys():  # pour chaque clé = solution
         dominante = list(
             score.keys()
-        )  # initialisé la liste des solutions dominantes à toute les solutions
-        for i in range(3):  # pour chaque objectif
+        )  # Initialisation de la liste des solutions dominantes à toute les solutions
+        for i in range(3):  # Parcours des objectifs
             objectif_key = score[key][i]  # on récupère sa valeur
 
             for s in list(dominante):  # pour chaque solution dominante
                 if (
                     objectif_key <= score[s][i]
-                ):  # on regarde si l'objectif de la solution ciblé est inferieur à l'objectif de la solution dominante
+                ):  # on regarde si l'objectif de la solution ciblée est inferieur à l'objectif de la solution dominante
                     dominante.remove(
                         s
                     )  # si oui alors on supprime la solution dominante de la liste
 
         dominance[key] = dominante
-    # print("dominance",dominance)
     return dominance
 
 
@@ -202,6 +213,7 @@ def selection(liste_solutions, ranking):
         index2 = id_solutions[i + 1]
         rank = ranking[index1] - ranking[index2]
         if rank == 0:  # si les deux solution on le même rang
+            # Compraison des crowding distance
             if distance_dict[index1] >= distance_dict[index2]:
                 selected_solutions.append(liste_solutions[index1])
             else:
@@ -302,3 +314,28 @@ def elitism_selection(n, population):
         else:
             break
     return selected_pop
+
+
+### Affichage
+
+
+def display_candidat(candidat):
+    matrix = np.zeros((3, 5), dtype=float)
+    for i in range(len(candidat)):
+        matrix[candidat[i]][i] = i + 1
+    return matrix
+
+
+def display_pop(population):
+    fig = plt.figure(figsize=(20, 7))
+    rows = 2
+    columns = 5
+
+    for i in range(len(population)):
+        fig.add_subplot(rows, columns, i + 1)
+        plt.imshow(display_candidat(population[i]), cmap=cm.Oranges)
+        plt.ylabel("n° VM")
+        plt.xlabel("n° tâche")
+        plt.title(population[i])
+
+    return None

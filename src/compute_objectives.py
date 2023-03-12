@@ -90,8 +90,8 @@ def compute_temps_VM(solution, VM_id):
     if len(tasks_id) > 0:
         temps_VM = (
             compute_date_fin(solution, tasks_id[-1])
-            - compute_date_fin(solution, tasks_id[0])
-            + compute_temps_execution(tasks_id[0], VM_id)
+            - (compute_date_fin(solution, tasks_id[0])
+            + compute_temps_execution(tasks_id[0], VM_id))
         )
         return temps_VM
     else:

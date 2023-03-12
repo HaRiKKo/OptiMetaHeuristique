@@ -328,8 +328,8 @@ def display_candidat(candidat):
 
 def display_pop(population):
     fig = plt.figure(figsize=(30, 10))
-    rows = 3
-    columns = 4
+    rows = 5
+    columns = 5
 
     for i in range(len(population)):
         fig.add_subplot(rows, columns, i + 1)

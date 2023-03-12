@@ -15,13 +15,29 @@ Worflow scheduling using Multi-Objective Optimization (MOO) with a Pareto approa
 * Python version >=3.8.10 
 * Pip version >= 20.0.2
 
+## Project worktree
+
+* **constants:**
+    * params.yaml contains all constant variables we need to run the project
+    * parse_parameters.py parses all constant variables from yaml file in order to use them
+
+* **doc:**
+    * modelization.pdf summarizes the notations and technicals choices we made for modelling the project
+    * report.pdf (coming soon)
+
+
+* **src:**
+    * compute_objectives.py contains all functions for evaluating the objectives functions
+    * functions.py contains all functions required for genetic algorithms to work (in particular NSGA-II)
+    * utils.py contains functions for conding more conviently and respecting devops rules
+
 ## Installation
 
 1. Clone the following repository: 
 
 `git clone https://github.com/HaRiKKo/OptiMetaHeuristique.git`
 
-2. Create a virtual Python environment with this command in your terminal: 
+2. Create a virtual Python environment with the command below in your terminal, please replace venv_name_project with you own name project: 
 
 `python3 -m venv venv_name_project`
 
@@ -44,6 +60,6 @@ To run the project, you have to configure the parameter file that you can find i
 
 * **resource_path** : the string with the location where the required resources for the project are stored
 
-After configuring the parameter file and activating the virtual environment, you can run the projet by using this command :
+After having configured the parameter file and activated the virtual environment, you can run the projet by using this command :
 
 `python main.py`

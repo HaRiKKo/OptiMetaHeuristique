@@ -19,10 +19,54 @@ task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resourc
     file_path
 )
 
-starter = create_start_population()
+### Algorithme NSGA II
 
-# score = evaluate_population(starter)
+CRITERE_ARRET = 100
 
-# ranking(score)
+# Initialisation de la population de départ
+population_depart = create_start_population()
+print("Population de départ : ", population_depart)
+display_pop(population_depart)
 
-print(starter[0], "\n", compute_disponibilite(starter[0]))
+print(
+    "Evaluation de la population de départ :\n", evaluate_population(population_depart)
+)
+
+# Entrée dans la boucle
+for i in range(CRITERE_ARRET):
+    # print("\n____ Debut de la boucle ", i)
+    # Evaluation de la population
+    score = evaluate_population(population_depart)
+
+    # Rang
+    rank = ranking(score)
+    # print("Rang de la population de départ : ", score)
+
+    ### Child population - début
+    selected_solution = selection(population_depart, rank)
+    # print("Population sélectionnée : ", selected_solution)
+
+    # Crossover
+    crossed_population = crossover(selected_solution)
+
+    # Mutation
+    mutated_population = mutation(crossed_population)
+    # print("Population enfant : ", mutated_population)
+
+    ### Child population - fin
+
+    # Combinaison des populations
+    combined_population = population_depart + mutated_population
+
+    selected_elite_population = elitism_selection(10, combined_population)
+    # print("Elite population : ", selected_elite_population)
+
+    # La population elite devient la nouvelle population de départ
+    population_depart = selected_elite_population
+
+print("\nPopulation finale : ", selected_elite_population)
+display_pop(selected_elite_population)
+print(
+    "Evaluation de la population finale :\n",
+    evaluate_population(selected_elite_population),
+)

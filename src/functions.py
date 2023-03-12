@@ -320,22 +320,22 @@ def elitism_selection(n, population):
 
 
 def display_candidat(candidat):
-    matrix = np.zeros((3, 5), dtype=float)
+    matrix = np.zeros((3, len(candidat)), dtype=float)
     for i in range(len(candidat)):
         matrix[candidat[i]][i] = i + 1
     return matrix
 
 
 def display_pop(population):
-    fig = plt.figure(figsize=(20, 7))
-    rows = 2
-    columns = 5
+    fig = plt.figure(figsize=(30, 10))
+    rows = 3
+    columns = 4
 
     for i in range(len(population)):
         fig.add_subplot(rows, columns, i + 1)
         plt.imshow(display_candidat(population[i]), cmap=cm.Oranges)
         plt.ylabel("n° VM")
         plt.xlabel("n° tâche")
-        plt.title(population[i])
+        #plt.title(population[i])
 
     return None

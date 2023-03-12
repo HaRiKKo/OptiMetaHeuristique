@@ -8,13 +8,13 @@ from src.utils import *
 sys.path.insert(0, os.path.dirname(os.path.abspath("constants")))
 from constants.parse_parameters import *
 
-file_path = read_files(resource_path)
+file_path = read_files()
 task_connectivity, task_instructions, VM_caracteristique, VM_cost = read_resources(
     file_path
 )
 
 # Info sur le model
-nb_tache = 5
+nb_tache = 15
 nb_VM = 3
 nb_objectif = 3
 
